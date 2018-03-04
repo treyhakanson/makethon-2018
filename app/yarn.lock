@@ -4940,6 +4940,10 @@ react-native-tab-view@^0.0.74:
   dependencies:
     prop-types "^15.6.0"
 
+react-native-timer-countdown@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/react-native-timer-countdown/-/react-native-timer-countdown-1.1.0.tgz#526576d52399f64612703c3f8c00b7d5fff6f597"
+
 react-native-vector-icons@4.5.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/react-native-vector-icons/-/react-native-vector-icons-4.5.0.tgz#6b95619e64f62f05f579f74a01fe5640df95158b"

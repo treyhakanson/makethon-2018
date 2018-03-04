@@ -1,3 +1,5 @@
+import TimerCountdown from "react-native-timer-countdown";
+
 import React, { Component } from "react";
 import {
    StyleSheet,
@@ -114,6 +116,7 @@ class BotList extends Component {
    };
 
    state = {
+      firstBot: {},
       bots: new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 })
    };
 
@@ -131,6 +134,7 @@ class BotList extends Component {
          .then(response => response.json())
          .then(responseJson => {
             this.setState({
+               firstBot: responseJson.bots[0],
                bots: this.state.bots.cloneWithRows(responseJson.bots)
             });
          })
@@ -157,6 +161,18 @@ class BotList extends Component {
                   );
                }}
             />
+            <TouchableOpacity
+               style={[styles.SubmitButton, { margin: 10 }]}
+               onPress={() =>
+                  this.props.navigation.navigate("Battle", {
+                     ...this.state.firstBot
+                  })
+               }
+            >
+               <Text style={{ color: "#fff", textAlign: "center" }}>
+                  Battle
+               </Text>
+            </TouchableOpacity>
          </View>
       );
    }
@@ -255,9 +271,167 @@ class EditBot extends Component {
    }
 }
 
+let resetBattleTimer;
+let time;
+class Battle extends Component {
+   static navigationOptions = {
+      title: "Change Directives",
+      headerStyle: {
+         backgroundColor: color,
+         borderBottomColor: "transparent"
+      },
+      headerTintColor: "#fff",
+      headerTitleStyle: {
+         fontSize: 22
+      }
+   };
+
+   state = {
+      priority0: "",
+      priority1: "",
+      priority2: "",
+      time: 15000
+   };
+
+   getDirectives() {
+      // const currentValues = Object.values(this.state);
+      // return DIRECTIVES.filter(x => {
+      //    return currentValues.indexOf(x) === -1;
+      // }).map(x => ({ value: x }));
+      return DIRECTIVES.map(x => ({ value: x }));
+   }
+
+   onChangeText = (key, value) => {
+      this.setState({ [key]: value, time });
+   };
+
+   constructor(props) {
+      super(props);
+      resetBattleTimer = () => this.setState({ time: 15000 });
+   }
+
+   updateDirectives = () => {
+      const { botId } = this.props.navigation.state.params;
+      fetch(`${BASE_URL}/directives/${botId}`, {
+         method: "POST",
+         headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json"
+         },
+         body: JSON.stringify({
+            directives: [
+               { priority: 0, name: this.state.priority0 },
+               { priority: 1, name: this.state.priority1 },
+               { priority: 2, name: this.state.priority2 }
+            ]
+         })
+      })
+         .then(() => {
+            // this.props.navigation.navigate("Fight");
+         })
+         .catch(err => {
+            console.log(err);
+         });
+   };
+
+   updateTime = time => {
+      this.setState({ time });
+   };
+
+   render() {
+      return (
+         <View style={[styles.container, { padding: 15 }]}>
+            <Text style={{ marginBottom: 15 }}>Confirm Move</Text>
+            <TimerCountdown
+               initialSecondsRemaining={this.state.time}
+               interval={1000}
+               onTick={_time => {
+                  time = _time;
+               }}
+               onTimeElapsed={() => this.props.navigation.navigate("Fight")}
+               allowFontScaling={true}
+               style={{
+                  fontSize: 32,
+                  textAlign: "center",
+                  fontWeight: "bold",
+                  color: color
+               }}
+            />
+            <Dropdown
+               label="Priority 1"
+               data={this.getDirectives()}
+               value={this.state.priority0}
+               onChangeText={value => this.onChangeText("priority0", value)}
+            />
+            <Dropdown
+               label="Priority 2"
+               data={this.getDirectives()}
+               value={this.state.priority1}
+               onChangeText={value => this.onChangeText("priority1", value)}
+            />
+            <Dropdown
+               label="Priority 3"
+               data={this.getDirectives()}
+               value={this.state.priority2}
+               onChangeText={value => this.onChangeText("priority2", value)}
+            />
+            <TouchableOpacity
+               style={styles.SubmitButton}
+               onPress={this.updateDirectives}
+            >
+               <Text style={{ color: "#fff", textAlign: "center" }}>
+                  Confirm
+               </Text>
+            </TouchableOpacity>
+         </View>
+      );
+   }
+}
+
+class Fight extends Component {
+   static navigationOptions = {
+      title: "Change Directives",
+      headerStyle: {
+         backgroundColor: color,
+         borderBottomColor: "transparent"
+      },
+      headerTintColor: "#fff",
+      headerTitleStyle: {
+         fontSize: 22
+      }
+   };
+
+   render() {
+      return (
+         <View
+            style={{
+               flex: 1,
+               alignItems: "center",
+               justifyContent: "center",
+               backgroundColor: color
+            }}
+         >
+            <Text style={{ color: "#fff", fontSize: 48, fontWeight: "#fff" }}>
+               Fight!
+            </Text>
+            <TimerCountdown
+               initialSecondsRemaining={5000}
+               onTimeElapsed={() => {
+                  resetBattleTimer();
+                  this.props.navigation.goBack();
+               }}
+               style={{ fontSize: 0, color: "transparent" }}
+            />
+         </View>
+      );
+   }
+}
+
 export default StackNavigator({
    BotList: { screen: BotList },
-   EditBot: { screen: EditBot }
+   EditBot: { screen: EditBot },
+   Battle: { screen: Battle },
+   Fight: { screen: Fight }
 });
 
 const styles = StyleSheet.create({
