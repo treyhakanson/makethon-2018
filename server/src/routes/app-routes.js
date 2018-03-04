@@ -2,7 +2,7 @@ import { Bot } from "../db/models";
 
 function updateDirectives(req, res) {
    const { botId } = req.params;
-   const directives = JSON.parse(req.body.directives);
+   const { directives } = req.body;
 
    Bot.findOneAndUpdate({ botId }, { botId, directives }, (err, bot) => {
       if (err) {
@@ -28,7 +28,7 @@ function getDirectives(req, res) {
 function getBots(req, res) {
    const { teamId, botId } = req.params;
 
-   let search = { teamId };
+   let search = { team: teamId };
    if (botId) {
       search[botId] = botId;
    }
@@ -44,7 +44,7 @@ function getBots(req, res) {
 }
 
 export default function(app) {
-   app.get("/bot/:teamId/:botId", getBots);
+   app.get("/bot/:teamId/:botId?", getBots);
    app.post("/directives/:botId", updateDirectives);
    app.get("/directives/:botId", getDirectives);
 }
