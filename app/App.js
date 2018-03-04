@@ -5,13 +5,15 @@ import {
    View,
    TouchableOpacity,
    Image,
-   ListView
+   ListView,
+   Platform
 } from "react-native";
 import { StackNavigator } from "react-navigation";
 import { Dropdown } from "react-native-material-dropdown";
 
-const BASE_URL = "http://29599177.ngrok.io";
-const TEAM_ID = 0;
+const BASE_URL = "http://154c2b90.ngrok.io";
+const TEAM_ID = Platform.OS === "ios" ? 1 : 0;
+const color = Platform.OS === "ios" ? "rgb(10, 182, 100)" : "rgb(214, 71, 170)";
 
 // FIXME: ultimately jank
 let forceUpdate;
@@ -48,16 +50,24 @@ const BotItem = props => (
       <View style={{ flex: 1 }}>
          <Text style={{ fontWeight: "bold" }}>Bot {props.item.botId}</Text>
          <View style={{ marginBottom: 5 }}>
-            <Text style={{ color: "rgb(9, 213, 121)", fontSize: 12 }}>
-               ●&nbsp;<Text style={{ color: "#9a9a9a", fontSize: 10 }}>
-                  Online
+            {props.online ? (
+               <Text style={{ color: "rgb(9, 213, 121)", fontSize: 12 }}>
+                  ●&nbsp;<Text style={{ color: "#9a9a9a", fontSize: 10 }}>
+                     Online
+                  </Text>
                </Text>
-            </Text>
+            ) : (
+               <Text style={{ color: "rgb(230, 14, 93)", fontSize: 12 }}>
+                  ●&nbsp;<Text style={{ color: "#9a9a9a", fontSize: 10 }}>
+                     Offline
+                  </Text>
+               </Text>
+            )}
          </View>
          <View
             style={{
                alignSelf: "stretch",
-               backgroundColor: "rgb(9, 213, 121)",
+               backgroundColor: props.online ? "rgb(9, 213, 121)" : "#d5d5d5",
                borderRadius: 4,
                height: 8,
                borderWidth: 1,
@@ -72,7 +82,7 @@ const BotItem = props => (
             }}
          >
             {props.item.directives
-               .sort((x, y) => x.priority < y.priority)
+               .sort((x, y) => x.priority > y.priority)
                .map((x, i) => (
                   <View
                      key={i}
@@ -94,7 +104,7 @@ class BotList extends Component {
    static navigationOptions = {
       title: "Available Bots",
       headerStyle: {
-         backgroundColor: "rgb(0, 94, 255)",
+         backgroundColor: color,
          borderBottomColor: "transparent"
       },
       headerTintColor: "#fff",
@@ -137,28 +147,28 @@ class BotList extends Component {
             <ListView
                style={styles.BotList}
                dataSource={this.state.bots}
-               renderRow={item => (
-                  <BotItem onPress={this.itemPressed} item={item} />
-               )}
+               renderRow={(item, sectionId, rowId) => {
+                  return (
+                     <BotItem
+                        onPress={this.itemPressed}
+                        item={item}
+                        online={rowId == 0}
+                     />
+                  );
+               }}
             />
          </View>
       );
    }
 }
 
-const DIRECTIVES = [
-   "directive 1",
-   "directive 2",
-   "directive 3",
-   "directive 4",
-   "directive 5"
-];
+const DIRECTIVES = ["move", "left", "right", "stop"];
 
 class EditBot extends Component {
    static navigationOptions = {
       title: "Change Directives",
       headerStyle: {
-         backgroundColor: "rgb(0, 94, 255)",
+         backgroundColor: color,
          borderBottomColor: "transparent"
       },
       headerTintColor: "#fff",
@@ -174,10 +184,11 @@ class EditBot extends Component {
    };
 
    getDirectives() {
-      const currentValues = Object.values(this.state);
-      return DIRECTIVES.filter(x => {
-         return currentValues.indexOf(x) === -1;
-      }).map(x => ({ value: x }));
+      // const currentValues = Object.values(this.state);
+      // return DIRECTIVES.filter(x => {
+      //    return currentValues.indexOf(x) === -1;
+      // }).map(x => ({ value: x }));
+      return DIRECTIVES.map(x => ({ value: x }));
    }
 
    onChangeText = (key, value) => {
@@ -277,7 +288,7 @@ const styles = StyleSheet.create({
    },
    SubmitButton: {
       marginTop: 20,
-      backgroundColor: "rgb(0, 94, 255)",
+      backgroundColor: color,
       paddingHorizontal: 15,
       paddingVertical: 10
    }
